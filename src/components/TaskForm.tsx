@@ -292,19 +292,6 @@ export default function TaskForm({
             />
           </div>
 
-          {/* 垫付是否回款 */}
-          <div className="space-y-1.5">
-            <Label>垫付回款</Label>
-            <div className="flex items-center gap-2 h-9">
-              <Switch
-                className="data-[state=checked]:!bg-[#6E7DF7]"
-                checked={form.isAdvanceReimbursed}
-                onCheckedChange={v => update('isAdvanceReimbursed', v)}
-              />
-              <span className="text-sm">{form.isAdvanceReimbursed ? '已回款' : '未回款'}</span>
-            </div>
-          </div>
-
           {/* 商品金额 */}
           <div className="space-y-1.5">
             <Label>商品金额 (¥)</Label>
@@ -465,6 +452,19 @@ export default function TaskForm({
               value={form.completionDate}
               onChange={e => update('completionDate', e.target.value)}
             />
+          </div>
+
+          {/* 垫付是否回款 */}
+          <div className="space-y-1.5">
+            <Label>垫付回款</Label>
+            <div className="flex items-center gap-2 h-9">
+              <Switch
+                className="data-[state=checked]:!bg-[#6E7DF7]"
+                checked={form.isAdvanceReimbursed}
+                onCheckedChange={v => update('isAdvanceReimbursed', v)}
+              />
+              <span className="text-sm">{form.isAdvanceReimbursed ? '已回款' : '未回款'}</span>
+            </div>
           </div>
 
           {/* 是否结算 + 结算日期 — 同行 */}
