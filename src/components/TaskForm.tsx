@@ -454,8 +454,8 @@ export default function TaskForm({
             />
           </div>
 
-          {/* 垫付是否回款 */}
-          <div className="space-y-1.5">
+          {/* 垫付是否回款 — 单独一行 */}
+          <div className="space-y-1.5 sm:col-span-2">
             <Label>垫付回款</Label>
             <div className="flex items-center gap-2 h-9">
               <Switch

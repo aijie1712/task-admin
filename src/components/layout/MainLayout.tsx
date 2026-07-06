@@ -24,7 +24,7 @@ const navItems = [
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { logout } = useCurrentUser();
+  const { user, logout } = useCurrentUser();
 
   const currentLabel = navItems.find(n => location.pathname.startsWith(n.path))?.label ?? '数据看板';
 
@@ -105,6 +105,12 @@ export default function MainLayout() {
             <Menu className="h-6 w-6" />
           </button>
           <h1 className="text-lg font-semibold">{currentLabel}</h1>
+          <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              {user?.username || '未知用户'}
+            </div>
+          </div>
         </header>
 
         {/* 页面内容 */}
