@@ -87,7 +87,7 @@ export default function TaskForm({
         advanceAmount: String(initial.advanceAmount || ''),
         isAdvanceReimbursed: initial.isAdvanceReimbursed ?? false,
         cooperationMethod: initial.cooperationMethod,
-        cooperationRequirements: initial.cooperationRequirements || [],
+        cooperationRequirements: initial.cooperationRequirements || '',
         customRequirement: '',
         productAmount: String(initial.productAmount || ''),
         manuscriptFee: String(initial.manuscriptFee || ''),

@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
 import { Plus, X, Tags, Settings2, UserCircle, RotateCcw, ChevronUp, ChevronDown, Users } from 'lucide-react';
 import { toast } from 'sonner';
 

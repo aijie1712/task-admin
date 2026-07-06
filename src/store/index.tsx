@@ -84,7 +84,7 @@ function seedTasks(userId: string): Database['public']['Tables']['tasks']['Inser
 }
 
 /** 将 Supabase 行转为 Task 类型 */
-function rowToTask(row: Record<string, unknown>): Task {
+function rowToTask(row: Database['public']['Tables']['tasks']['Row']): Task {
   return {
     id: row.id as string,
     taskName: (row.task_name as string) || '',
@@ -215,7 +215,7 @@ export function useTasks() {
 
       if (cancelled) return;
       if (!error && data) {
-        const mapped = (data as Record<string, unknown>[]).map(rowToTask);
+        const mapped = data.map(rowToTask);
         setTasks(mapped);
 
         // 管理员账号且无数据 → 插入种子数据
@@ -226,9 +226,9 @@ export function useTasks() {
             const { data: refetched } = await supabase
               .from('tasks').select('*').eq('user_id', userId)
               .order('created_at', { ascending: false });
-            if (refetched && !cancelled) {
-              setTasks((refetched as Record<string, unknown>[]).map(rowToTask));
-            }
+      if (refetched && !cancelled) {
+        setTasks(refetched.map(rowToTask));
+      }
           }
         }
       }
@@ -239,17 +239,17 @@ export function useTasks() {
   }, [userId, user?.isAdmin]);
 
   const addTask = useCallback(async (data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const { error } = await supabase.from('tasks').insert({ ...taskToRow(data), user_id: userId });
+    const { error } = await supabase.from('tasks').insert({ ...taskToRow(data), user_id: userId } as Database['public']['Tables']['tasks']['Insert']);
     if (error) throw error;
     // 重新拉取列表
     const { data: refetched } = await supabase
       .from('tasks').select('*').eq('user_id', userId)
       .order('created_at', { ascending: false });
-    if (refetched) setTasks((refetched as Record<string, unknown>[]).map(rowToTask));
+    if (refetched) setTasks(refetched.map(rowToTask));
   }, [userId]);
 
   const updateTask = useCallback(async (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => {
-    const { error } = await supabase.from('tasks').update(taskToRow(data)).eq('id', id);
+    const { error } = await supabase.from('tasks').update(taskToRow(data) as Database['public']['Tables']['tasks']['Update']).eq('id', id);
     if (error) throw error;
     setTasks(prev => prev.map(t =>
       t.id === id ? { ...t, ...data, updatedAt: new Date().toISOString() } : t
@@ -319,9 +319,9 @@ export function useConfig() {
     };
 
     if (configId) {
-      await supabase.from('configs').update(row).eq('id', configId);
+      await supabase.from('configs').update(row as Database['public']['Tables']['configs']['Update']).eq('id', configId);
     } else {
-      const { data: inserted } = await supabase.from('configs').insert(row).select('id').single();
+      const { data: inserted } = await supabase.from('configs').insert(row as Database['public']['Tables']['configs']['Insert']).select('id').single();
       if (inserted) setConfigId(inserted.id as string);
     }
   }, [userId, config, configId]);
@@ -352,13 +352,13 @@ export function useAccounts() {
       username: info.username,
       password_hash: hash,
       is_admin: info.isAdmin,
-    });
+    } as Database['public']['Tables']['accounts']['Insert']);
     if (error) throw error;
 
     // 新账号自动创建配置
     const { data: newAcc } = await supabase.from('accounts').select('id').eq('username', info.username).single();
     if (newAcc) {
-      await supabase.from('configs').insert({ user_id: (newAcc as Record<string, unknown>).id });
+      await supabase.from('configs').insert({ user_id: newAcc.id });
     }
 
     setAccounts(prev => [...prev, info]);
@@ -368,8 +368,8 @@ export function useAccounts() {
     // 先获取用户ID来删除关联数据
     const { data: acc } = await supabase.from('accounts').select('id').eq('username', username).single();
     if (acc) {
-      await supabase.from('tasks').delete().eq('user_id', (acc as Record<string, unknown>).id);
-      await supabase.from('configs').delete().eq('user_id', (acc as Record<string, unknown>).id);
+      await supabase.from('tasks').delete().eq('user_id', acc.id);
+      await supabase.from('configs').delete().eq('user_id', acc.id);
     }
     await supabase.from('accounts').delete().eq('username', username);
     setAccounts(prev => prev.filter(a => a.username !== username));
