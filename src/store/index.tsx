@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, createContext, useContext } from 'react';
 import type { Task, SystemConfig, AccountInfo, CurrentUser } from '@/types';
 import { supabase, sha256 } from '@/lib/supabase';
+import type { Database } from '@/lib/database.types';
 
 // ========== Auth 持久化 ==========
 const AUTH_KEY = 'task_admin_auth';
@@ -32,7 +33,7 @@ export const DEFAULT_CONFIG: SystemConfig = {
 };
 
 // ========== 种子数据 ==========
-function seedTasks(userId: string): Omit<Task, 'id' | 'createdAt' | 'updatedAt'>[] {
+function seedTasks(userId: string): Database['public']['Tables']['tasks']['Insert'][] {
   const mk = (
     name: string, account: string, advance: number, method: string, reqs: string,
     product: number, fee: number, rate: number, handling: number, net: number,
