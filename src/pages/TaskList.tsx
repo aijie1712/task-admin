@@ -17,7 +17,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Search, Pencil, Trash2, FileText, Filter, RotateCcw, CheckCircle2, Banknote, MoreHorizontal } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, FileText, Filter, RotateCcw, CheckCircle2, Banknote, MoreHorizontal, Undo2 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -185,6 +185,11 @@ export default function TaskList() {
       isSettled: true,
       settlementDate: task.settlementDate || today,
     });
+  };
+
+  const handleReimburse = (task: Task) => {
+    updateTask(task.id, { isAdvanceReimbursed: true });
+    toast.success('已标记为已回款');
   };
 
   const handleSubmit = (data: Omit<Task, 'id' | 'updatedAt'>) => {
@@ -514,6 +519,12 @@ export default function TaskList() {
                                   结算
                                 </DropdownMenuItem>
                               )}
+                              {!task.isAdvanceReimbursed && (
+                                <DropdownMenuItem onClick={() => handleReimburse(task)}>
+                                  <Undo2 className="h-4 w-4 text-orange-600" />
+                                  已回款
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem variant="destructive" onClick={() => setDeleteId(task.id)}>
                                 <Trash2 className="h-4 w-4" />
                                 删除
@@ -590,6 +601,12 @@ export default function TaskList() {
                           <DropdownMenuItem onClick={() => handleSettle(task)}>
                             <Banknote className="h-4 w-4 text-amber-600" />
                             结算
+                          </DropdownMenuItem>
+                        )}
+                        {!task.isAdvanceReimbursed && (
+                          <DropdownMenuItem onClick={() => handleReimburse(task)}>
+                            <Undo2 className="h-4 w-4 text-orange-600" />
+                            已回款
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem variant="destructive" onClick={() => setDeleteId(task.id)}>
