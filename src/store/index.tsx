@@ -282,10 +282,11 @@ export function useConfig() {
   const userId = user?.userId ?? '';
   const [config, setConfig] = useState<SystemConfig>(DEFAULT_CONFIG);
   const [configId, setConfigId] = useState<string | null>(null);
+  const [configLoading, setConfigLoading] = useState(true);
 
   // 加载配置
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) { setConfigLoading(false); return; }
     const load = async () => {
       const { data, error } = await supabase
         .from('configs')
@@ -293,7 +294,7 @@ export function useConfig() {
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (error) return;
+      if (error) { setConfigLoading(false); return; }
       if (data) {
         setConfigId(data.id as string);
         setConfig({
@@ -302,6 +303,7 @@ export function useConfig() {
           publishAccounts: (data.publish_accounts as string[]) || DEFAULT_CONFIG.publishAccounts,
         });
       }
+      setConfigLoading(false);
     };
     load();
   }, [userId]);
@@ -326,7 +328,7 @@ export function useConfig() {
     }
   }, [userId, config, configId]);
 
-  return { config, updateConfig };
+  return { config, updateConfig, configLoading };
 }
 
 // ========== Accounts Hook（管理员用） ==========

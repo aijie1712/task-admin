@@ -12,12 +12,24 @@ import { Plus, X, Tags, Settings2, UserCircle, RotateCcw, ChevronUp, ChevronDown
 import { toast } from 'sonner';
 
 export default function Settings() {
-  const { config, updateConfig } = useConfig();
+  const { config, updateConfig, configLoading } = useConfig();
   const { user } = useCurrentUser();
 
   const [newMethod, setNewMethod] = useState('');
   const [newRequirement, setNewRequirement] = useState('');
   const [newAccount, setNewAccount] = useState('');
+
+  if (configLoading) {
+    return (
+      <div className="space-y-4">
+        {user?.isAdmin && <div className="h-[72px] rounded-xl bg-muted/50 animate-pulse" />}
+        <div className="h-[180px] rounded-xl bg-muted/50 animate-pulse" />
+        <div className="h-[180px] rounded-xl bg-muted/50 animate-pulse" />
+        <div className="h-[200px] rounded-xl bg-muted/50 animate-pulse" />
+        <div className="h-[60px] rounded-xl bg-muted/50 animate-pulse" />
+      </div>
+    );
+  }
 
   // 合作方式管理
   const addMethod = () => {
