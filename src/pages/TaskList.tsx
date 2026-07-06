@@ -22,6 +22,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 import type { Task } from '@/types';
 import TaskForm from '@/components/TaskForm';
 
@@ -128,8 +129,13 @@ export default function TaskList() {
     }
   };
 
-  const handleBatchDelete = () => {
-    deleteTasks(Array.from(selectedIds));
+  const handleBatchDelete = async () => {
+    try {
+      await deleteTasks(Array.from(selectedIds));
+      toast.success(`成功删除 ${selectedIds.size} 条任务`);
+    } catch (e) {
+      toast.error('批量删除失败，请检查网络或数据库权限');
+    }
     setSelectedIds(new Set());
     setBatchDeleteOpen(false);
   };
@@ -185,9 +191,14 @@ export default function TaskList() {
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteId) {
-      deleteTask(deleteId);
+      try {
+        await deleteTask(deleteId);
+        toast.success('任务已删除');
+      } catch (e) {
+        toast.error('删除失败，请检查网络或数据库权限');
+      }
       setDeleteId(null);
     }
   };

@@ -70,3 +70,8 @@ ON CONFLICT (username) DO NOTHING;
 INSERT INTO configs (user_id)
 SELECT id FROM accounts WHERE username = 'aijie'
 ON CONFLICT (user_id) DO NOTHING;
+
+-- 8. 关闭 RLS（行级安全）- 本项目使用 anon key 公开访问，无需 RLS 策略
+ALTER TABLE IF EXISTS accounts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS tasks DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS configs DISABLE ROW LEVEL SECURITY;
