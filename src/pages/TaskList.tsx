@@ -40,6 +40,7 @@ export default function TaskList() {
   const [filterMethod, setFilterMethod] = useState('all');
   const [filterSettled, setFilterSettled] = useState('all');
   const [filterCompleted, setFilterCompleted] = useState('all');
+  const [filterReimbursed, setFilterReimbursed] = useState('all');
   const [filterAccount, setFilterAccount] = useState('all');
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [monthCreated, setMonthCreated] = useState('');
@@ -69,7 +70,7 @@ export default function TaskList() {
   // 筛选或翻页时清除选中
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [search, filterMethod, filterSettled, filterCompleted, filterAccount,
+  }, [search, filterMethod, filterSettled, filterCompleted, filterReimbursed, filterAccount,
     monthCreated, monthCompleted, monthSettled, monthDueDate, page]);
 
   // 过滤
@@ -83,6 +84,8 @@ export default function TaskList() {
       if (filterSettled === 'unsettled' && t.isSettled) return false;
       if (filterCompleted === 'completed' && t.completionDegree < 100) return false;
       if (filterCompleted === 'pending' && t.completionDegree >= 100) return false;
+      if (filterReimbursed === 'reimbursed' && !t.isAdvanceReimbursed) return false;
+      if (filterReimbursed === 'unreimbursed' && t.isAdvanceReimbursed) return false;
       if (filterAccount !== 'all' && t.publishAccount !== filterAccount) return false;
       // 月份筛选
       if (monthCreated) {
@@ -100,7 +103,7 @@ export default function TaskList() {
       }
       return true;
     });
-  }, [tasks, search, filterMethod, filterSettled, filterCompleted, filterAccount,
+  }, [tasks, search, filterMethod, filterSettled, filterCompleted, filterReimbursed, filterAccount,
     monthCreated, monthCompleted, monthSettled, monthDueDate]);
 
   // 分页
@@ -150,6 +153,7 @@ export default function TaskList() {
     setFilterMethod('all');
     setFilterSettled('all');
     setFilterCompleted('all');
+    setFilterReimbursed('all');
     setFilterAccount('all');
     setMonthCreated('');
     setMonthCompleted('');
@@ -158,7 +162,7 @@ export default function TaskList() {
     setPage(1);
   };
 
-  const hasActiveFilters = search || filterMethod !== 'all' || filterSettled !== 'all' || filterCompleted !== 'all' || filterAccount !== 'all'
+  const hasActiveFilters = search || filterMethod !== 'all' || filterSettled !== 'all' || filterCompleted !== 'all' || filterReimbursed !== 'all' || filterAccount !== 'all'
     || monthCreated || monthCompleted || monthSettled || monthDueDate;
 
   const handleEdit = (task: Task) => {
@@ -183,7 +187,7 @@ export default function TaskList() {
     });
   };
 
-  const handleSubmit = (data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSubmit = (data: Omit<Task, 'id' | 'updatedAt'>) => {
     if (editing) {
       updateTask(editing.id, data);
     } else {
@@ -209,7 +213,7 @@ export default function TaskList() {
       <Card className="border-border/60">
         <CardContent className="p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               <div className="space-y-1">
                 <Label className="text-xs">搜索</Label>
                 <div className="relative">
@@ -265,6 +269,17 @@ export default function TaskList() {
                     <SelectItem value="all">全部</SelectItem>
                     <SelectItem value="completed">已完成</SelectItem>
                     <SelectItem value="pending">未完成</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">回款状态</Label>
+                <Select value={filterReimbursed} onValueChange={v => { setFilterReimbursed(v); setPage(1); }}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">全部</SelectItem>
+                    <SelectItem value="reimbursed">已回款</SelectItem>
+                    <SelectItem value="unreimbursed">未回款</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -396,6 +411,7 @@ export default function TaskList() {
                   <TableHead>创建日期</TableHead>
                   <TableHead>要求完成</TableHead>
                   <TableHead>完成日期</TableHead>
+                  <TableHead>回款</TableHead>
                   <TableHead>结算</TableHead>
                   <TableHead className="text-right">操作</TableHead>
                 </TableRow>
@@ -403,7 +419,7 @@ export default function TaskList() {
               <TableBody>
                 {pageData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={15} className="h-32 text-center text-muted-foreground">
+                    <TableCell colSpan={16} className="h-32 text-center text-muted-foreground">
                       <div className="flex flex-col items-center gap-2">
                         <FileText className="h-8 w-8 text-muted-foreground/50" />
                         暂无数据
@@ -448,6 +464,19 @@ export default function TaskList() {
                       <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{task.createdAt ? task.createdAt.slice(0, 10) : '-'}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{task.dueDate || '-'}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{task.completionDate || '-'}</TableCell>
+                      <TableCell>
+                        {task.isAdvanceReimbursed ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                            已回款
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                            未回款
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell>
                         {task.isSettled ? (
                           <span className="inline-flex items-center gap-1 text-xs text-green-600">
@@ -535,6 +564,7 @@ export default function TaskList() {
                       <span>到手: <span className="font-semibold text-emerald-600">{formatMoney(task.netAmount)}</span></span>
                       <span>完成: {task.completionDegree}%</span>
                       <span>结算: {task.isSettled ? '是' : '否'}</span>
+                      <span>回款: {task.isAdvanceReimbursed ? '是' : '否'}</span>
                       <span>创建: {task.createdAt ? task.createdAt.slice(0, 10) : '-'}</span>
                       <span>要求完成: {task.dueDate || '-'}</span>
                     </div>

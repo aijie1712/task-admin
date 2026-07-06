@@ -79,6 +79,7 @@ function taskToRow(data: Partial<Task> & { user_id?: string }): Record<string, u
   if (data.handlingFeeRate !== undefined) row.handling_fee_rate = data.handlingFeeRate;
   if (data.netAmount !== undefined) row.net_amount = data.netAmount;
   if (data.dueDate !== undefined) row.due_date = data.dueDate;
+  if (data.createdAt !== undefined) row.created_at = data.createdAt;
   if (data.requiredPosts !== undefined) row.required_posts = data.requiredPosts;
   if (data.publishedPosts !== undefined) row.published_posts = data.publishedPosts;
   if (data.completionDegree !== undefined) row.completion_degree = data.completionDegree;
@@ -172,7 +173,7 @@ export function useTasks() {
     return () => { cancelled = true; };
   }, [userId, user?.isAdmin]);
 
-  const addTask = useCallback(async (data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addTask = useCallback(async (data: Omit<Task, 'id' | 'updatedAt'>) => {
     const { error } = await supabase.from('tasks').insert({ ...taskToRow(data), user_id: userId } as Database['public']['Tables']['tasks']['Insert']);
     if (error) throw error;
     // 重新拉取列表
@@ -182,7 +183,7 @@ export function useTasks() {
     if (refetched) setTasks(refetched.map(rowToTask));
   }, [userId]);
 
-  const updateTask = useCallback(async (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => {
+  const updateTask = useCallback(async (id: string, data: Partial<Omit<Task, 'id'>>) => {
     const { error } = await supabase.from('tasks').update(taskToRow(data) as Database['public']['Tables']['tasks']['Update']).eq('id', id);
     if (error) throw error;
     setTasks(prev => prev.map(t =>

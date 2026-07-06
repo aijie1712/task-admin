@@ -15,7 +15,7 @@ import type { Task } from '@/types';
 interface TaskFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (data: Omit<Task, 'id' | 'updatedAt'>) => void;
   initial?: Task | null;
   cooperationMethods: string[];
   cooperationRequirements: string[];
@@ -37,6 +37,7 @@ interface FormData {
   handlingFeeRate: string;
   netAmount: string;
   dueDate: string;
+  createdAt: string;
   requiredPosts: string;
   publishedPosts: string;
   completionDate: string;
@@ -62,6 +63,7 @@ const emptyForm: FormData = {
   handlingFeeRate: '10',
   netAmount: '',
   dueDate: '',
+  createdAt: new Date().toISOString().slice(0, 10),
   requiredPosts: '',
   publishedPosts: '0',
   completionDate: '',
@@ -96,6 +98,7 @@ export default function TaskForm({
         handlingFeeRate: String(initial.handlingFeeRate ?? 10),
         netAmount: String(initial.netAmount || ''),
         dueDate: initial.dueDate || '',
+        createdAt: initial.createdAt || new Date().toISOString().slice(0, 10),
         requiredPosts: String(initial.requiredPosts || ''),
         publishedPosts: String(initial.publishedPosts ?? 0),
         completionDate: initial.completionDate || '',
@@ -184,6 +187,7 @@ export default function TaskForm({
       handlingFeeRate: num(form.handlingFeeRate),
       netAmount: num(form.netAmount),
       dueDate: form.dueDate || null,
+      createdAt: form.createdAt,
       requiredPosts: required,
       publishedPosts: published,
       completionDegree,
@@ -413,6 +417,16 @@ export default function TaskForm({
               type="date"
               value={form.dueDate}
               onChange={e => update('dueDate', e.target.value)}
+            />
+          </div>
+
+          {/* 创建日期 */}
+          <div className="space-y-1.5">
+            <Label>创建日期</Label>
+            <Input
+              type="date"
+              value={form.createdAt}
+              onChange={e => update('createdAt', e.target.value)}
             />
           </div>
 

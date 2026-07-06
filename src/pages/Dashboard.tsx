@@ -10,7 +10,7 @@ import {
 import { Label } from '@/components/ui/label';
 import {
   TrendingUp, Wallet, FileText, Package,
-  CheckCircle2, DollarSign, Clock, BarChart3,
+  CheckCircle2, DollarSign, Clock, BarChart3, Undo2,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -72,12 +72,13 @@ export default function Dashboard() {
     const totalManuscript = filteredTasks.reduce((s, t) => s + (t.manuscriptFee || 0), 0);
     const totalProduct = filteredTasks.reduce((s, t) => s + (t.productAmount || 0), 0);
     const totalNet = filteredTasks.reduce((s, t) => s + (t.netAmount || 0), 0);
+    const totalUnreimbursed = filteredTasks.filter(t => !t.isAdvanceReimbursed).reduce((s, t) => s + (t.advanceAmount || 0), 0);
     const completed = filteredTasks.filter(t => t.completionDegree >= 100).length;
     const settled = filteredTasks.filter(t => t.isSettled).length;
     const completionRate = total > 0 ? (completed / total) * 100 : 0;
     const settlementRate = total > 0 ? (settled / total) * 100 : 0;
 
-    return { total, totalAdvance, totalManuscript, totalProduct, totalNet, completed, settled, completionRate, settlementRate };
+    return { total, totalAdvance, totalManuscript, totalProduct, totalNet, totalUnreimbursed, completed, settled, completionRate, settlementRate };
   }, [filteredTasks]);
 
   // 按合作方式统计
@@ -116,6 +117,7 @@ export default function Dashboard() {
   const cards = [
     { label: '任务总数', value: stats.total.toString(), icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: '垫付总额', value: formatMoney(stats.totalAdvance), icon: Wallet, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: '待回款金额', value: formatMoney(stats.totalUnreimbursed), icon: Undo2, color: 'text-orange-600', bg: 'bg-orange-50' },
     { label: '稿费总额', value: formatMoney(stats.totalManuscript), icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
     { label: '商品总额', value: formatMoney(stats.totalProduct), icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
     { label: '到手总额', value: formatMoney(stats.totalNet), icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
