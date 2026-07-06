@@ -32,57 +32,6 @@ export const DEFAULT_CONFIG: SystemConfig = {
   publishAccounts: ['小红书-主号', '抖音-主号', '微博-主号', 'B站-主号'],
 };
 
-// ========== 种子数据 ==========
-function seedTasks(userId: string): Database['public']['Tables']['tasks']['Insert'][] {
-  const mk = (
-    name: string, account: string, advance: number, method: string, reqs: string,
-    product: number, fee: number, rate: number, handling: number, net: number,
-    dueDate: string | null, requiredPosts: number, publishedPosts: number,
-    compDate: string | null, settled: boolean, settleDate: string | null,
-    commissioned: boolean, commissionDate: string | null,
-    reimbursed: boolean, remarks: string,
-  ) => ({
-    user_id: userId,
-    task_name: name,
-    publish_account: account,
-    advance_amount: advance,
-    cooperation_method: method,
-    cooperation_requirements: reqs,
-    product_amount: product,
-    manuscript_fee: fee,
-    commission_rate: rate,
-    commission_amount: fee * rate / 100,
-    handling_fee_rate: handling,
-    net_amount: net,
-    due_date: dueDate || '',
-    required_posts: requiredPosts,
-    published_posts: publishedPosts,
-    completion_degree: requiredPosts > 0 ? Math.round((publishedPosts / requiredPosts) * 100) : 0,
-    completion_date: compDate,
-    is_settled: settled,
-    settlement_date: settleDate,
-    is_commissioned: commissioned,
-    commission_date: commissionDate,
-    is_advance_reimbursed: reimbursed,
-    remarks,
-  });
-
-  return [
-    mk('品牌A秋季新品推广', '小红书-主号', 5000, '置换', '图文发布', 3000, 2000, 10, 10, 1600, '2026-06-20', 5, 5, '2026-06-15', true, '2026-06-20', true, '2026-06-22', false, '品牌置换合作，效果良好'),
-    mk('品牌B抖音短视频', '抖音-主号', 2000, '寄拍', '视频发布', 1500, 3000, 15, 10, 2250, '2026-06-25', 3, 3, '2026-06-20', true, '2026-06-25', true, '2026-06-27', true, '寄拍任务，已结算'),
-    mk('品牌C月度合作', '微博-主号', 8000, '包月', '图文发布', 5000, 8000, 20, 10, 5600, '2026-07-15', 5, 4, null, false, null, false, null, false, '包月合作进行中'),
-    mk('品牌D专场直播', '抖音-主号', 10000, '专场', '直播带货', 8000, 5000, 25, 10, 3250, '2026-07-05', 2, 2, '2026-07-01', false, null, false, null, false, '专场直播，待结算'),
-    mk('品牌E纯佣合作', 'B站-主号', 0, '纯佣', '淘宝挂车', 0, 0, 30, 10, 0, '2026-07-20', 5, 3, null, false, null, false, null, true, '纯佣模式，按效果结算'),
-    mk('品牌F报备推广', '微博-主号', 3000, '报备', '微信推文', 2000, 1500, 10, 10, 1200, '2026-06-01', 4, 4, '2026-05-28', true, '2026-06-05', true, '2026-06-07', true, '报备推广，已完结'),
-    mk('品牌G小红书种草', '小红书-主号', 1500, '置换', '小红书种草', 1000, 1800, 12, 10, 1404, '2026-06-15', 3, 3, '2026-06-10', true, '2026-06-18', true, '2026-06-20', true, '置换合作，效果好'),
-    mk('品牌H抖音推广', '抖音-主号', 2500, '寄拍', '视频发布', 1800, 2500, 15, 10, 1875, '2026-07-12', 4, 2, null, false, null, false, null, false, '进行中，视频待剪辑'),
-    mk('品牌I直播带货', '小红书-主号', 6000, '包月', '直播带货', 4000, 6000, 20, 10, 4200, '2026-07-10', 10, 9, '2026-07-03', false, null, false, null, false, '包月合作，即将完成'),
-    mk('品牌J微博转发', '微博-主号', 500, '报备', '微博转发', 300, 800, 10, 10, 640, '2026-06-28', 2, 2, '2026-06-25', true, '2026-06-30', true, '2026-07-02', true, '轻量级报备任务'),
-    mk('品牌K图文推广', 'B站-主号', 2000, '置换', '图文发布', 1500, 2000, 10, 10, 1600, '2026-05-20', 3, 3, '2026-05-15', true, '2026-05-20', true, '2026-05-22', true, '5月置换合作'),
-    mk('品牌L短视频寄拍', '抖音-主号', 3000, '寄拍', '视频发布', 2000, 3500, 15, 10, 2625, '2026-07-18', 10, 7, null, false, null, false, null, true, '寄拍进行中'),
-  ];
-}
-
 /** 将 Supabase 行转为 Task 类型 */
 function rowToTask(row: Database['public']['Tables']['tasks']['Row']): Task {
   return {
@@ -215,22 +164,7 @@ export function useTasks() {
 
       if (cancelled) return;
       if (!error && data) {
-        const mapped = data.map(rowToTask);
-        setTasks(mapped);
-
-        // 管理员账号且无数据 → 插入种子数据
-        if (mapped.length === 0 && user?.isAdmin) {
-          const seeds = seedTasks(userId);
-          const { error: insertErr } = await supabase.from('tasks').insert(seeds);
-          if (!insertErr) {
-            const { data: refetched } = await supabase
-              .from('tasks').select('*').eq('user_id', userId)
-              .order('created_at', { ascending: false });
-      if (refetched && !cancelled) {
-        setTasks(refetched.map(rowToTask));
-      }
-          }
-        }
+        setTasks(data.map(rowToTask));
       }
       if (!cancelled) setLoading(false);
     };
